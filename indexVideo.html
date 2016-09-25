@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Science Week 2016</title>
+        <!-- Babylon.js -->
+        <script src="./js/hand.minified-1.2.js"></script>
+        <script src="./js/cannon.js"></script>
+        <script src="./js/oimo.js"></script>
+        <script src="./js/babylon.js"></script>
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+			
+			.title {
+				font-family: arial;
+			    position: absolute;
+			    top: 0;
+			    left: 0;
+			    margin: 10px;
+			    padding: 10px;
+				background: transparent;
+				border-radius: 5px;
+				border: 1px solid white;
+				color: #BBB8B8;
+				box-shadow: 0px 0px 10px 2px black;
+				text-shadow: 2px 2px #000000;
+			}
+
+			.title span {
+			    display: block;
+			    font-size: 12px;
+			}
+			
+			#video2 {
+				position: absolute;
+				bottom: 20px;
+				right: 20px;
+			}
+        </style>
+    </head>
+<body>
+	<div class="title">Daniel Browell<span>Science Week 2016</span></div>
+	<video id="video2" autoplay src="textures/soccer1.webm" loop></video>
+    <canvas id="renderCanvas"></canvas>
+    <script>
+        var canvas = document.getElementById("renderCanvas");
+        var engine = new BABYLON.Engine(canvas, true);
+        var createScene = function () {
+        /* Make a model of our solar system */
+        
+        // These are our planets
+        var planets = {
+        	mercury	: 	{ diameter: 4866, orbit: 57950000 },
+        	venus 	: 	{ diameter: 12106, orbit: 108110000 },
+        	earth 	: 	{ diameter: 12742, orbit: 149570000 },
+        	mars 	: 	{ diameter: 6760, orbit: 227840000 }, 
+        	jupiter	: 	{ diameter: 142984, orbit: 778140000 },
+        	saturn 	: 	{ diameter: 116438, orbit: 1427000000 },
+        	uranus 	: 	{ diameter: 46940, orbit: 2870300000 },
+        	neptune	: 	{ diameter: 45432, orbit: 4499900000 },
+        	pluto 	: 	{ diameter: 2274, orbit: 5913000000 }
+        };
+        
+        var planets2 = {
+        	mercury	: 	{ diameter: 4, orbit: 57 + 1300 },
+        	venus 	: 	{ diameter: 12, orbit: 108  + 1300 },
+        	earth 	: 	{ diameter: 12, orbit: 149  + 1300 },
+        	mars 	: 	{ diameter: 6, orbit: 227  + 1300 }, 
+        	jupiter	: 	{ diameter: 142, orbit: 778 + 1300  },
+        	saturn 	: 	{ diameter: 116, orbit: 1427 + 1300  },
+        	uranus 	: 	{ diameter: 46, orbit: 2870 + 1300  },
+        	neptune	: 	{ diameter: 45, orbit: 4499 + 1300  },
+        	pluto 	: 	{ diameter: 2, orbit: 5913 + 1300  }
+        };		
+		
+		
+        // fWe've written them out like this so you can see different things about them.
+        // We call this way of writing things out "Object Notation",
+        // because it is a nice way of making a note of objects.
+        // Each planet has a diameter in kilometers and an orbit in kilometers
+        // The planets are big, and really far apart.
+        // It would take you about 10 minutes to walk just 1 kilometer.
+        // Imagine how long it would take you to walk from the sun to where mercury orbits!
+        
+        // This is our star, the sun.
+        var sun = { diameter: 1391900 };
+		var sun2 = { diameter: 1300 };
+        // It has a diameter in kilometers which you can get like this:
+        // stars.sun.diameter
+        // Have you noticed how much bigger it is than the planets?
+        // We're going to make all the planets orbit around it.
+        
+        // π is a greek letter pronounced "Pie" (sounds yummy)
+        
+        var π = Math.PI; 
+        
+        // We use Pi to represent a special number 
+        // that you can use to find out the length around any circle,
+        // just by knowing the distance accross the circle.
+        // We call the length around a circle, the circumferance.
+        // The length across a circle, we call the diameter.
+        // We even have a name for half the length accross a circle (from the middle to the edge), 
+        // we call this the radius.
+        // We are going to use these things to help us draw circles and spheres like our planets.
+        
+        var star = {};
+        star.size = 10;
+        var scale_factor = (star.size / 25.4) / 1391900;
+        
+        // This is a helper function
+        // We use it to scale the thousands of kilometers down to something we can fit on our screen
+        // You give it the size in Kilometers and the scale factor like this
+        // scale(4866, )
+        var scale = function(sizeInKM, scaleFactor) {
+        	function int_zero(x) {
+        		if (x < 1) { return 0; }
+        		else { return parseInt( x ,10 ); };
+        	}		
+        	return int_zero(scaleFactor * sizeInKM * 10000 ) / 10000;
+        }
+        
+        // Ok that's all the bits we're going to need.
+        // Next lets set up our 3D scene and start putting things in it.
+        
+        	// Make a scene for our 3d objects to sit in
+            var scene = new BABYLON.Scene(engine);
+        	
+            // Make a camera
+            var camera = new BABYLON.ArcRotateCamera("Camera", 0, 0, 10, BABYLON.Vector3.Zero(), scene);
+            
+			//var camera = new BABYLON.UniversalCamera("Camera", new BABYLON.Vector3(0, 20, -5000) , scene);
+			camera.setPosition(new BABYLON.Vector3(0, 20, -5000));
+            camera.attachControl(canvas);
+			camera.maxZ = 20000000;
+
+			// Make the Lights
+		
+        	var light1 = new BABYLON.PointLight("Omni0", new BABYLON.Vector3(0, 0, 0), scene);
+			
+			var light0 = new BABYLON.HemisphericLight("Hemi0", new BABYLON.Vector3(0, 0, 0), scene);
+			light0.diffuse = new BABYLON.Color3(0.4, 0.4, 0.4);
+			light0.specular = new BABYLON.Color3(0, 0, 0);
+			light0.groundColor = new BABYLON.Color3(0, 0, 0);
+			
+			
+			// Make the background stars
+			
+			var skysphere = new BABYLON.Mesh.CreateSphere("skSphere", 32, 100.0, scene);
+			var skysphereMaterial = new BABYLON.StandardMaterial("skysphere", scene);
+			skysphereMaterial.backFaceCulling = false;
+			skysphereMaterial.disableLighting = true;
+			skysphere.material = skysphereMaterial;
+			skysphere.renderingGroupId = 0;
+			skysphere.infiniteDistance = true;
+			skysphereMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+			skysphereMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+			var skysphereTexture = new BABYLON.Texture("textures/stars.jpg", scene);
+			skysphereMaterial.reflectionTexture = skysphereTexture;
+			skysphereMaterial.diffuseTexture = skysphereTexture;
+			skysphereMaterial.emissiveTexture = skysphereTexture;
+			
+			
+			// Materials
+			
+        	// Make a Sun material
+		    var materialSun = new BABYLON.StandardMaterial("texture4", scene);
+		    materialSun.diffuseTexture = new BABYLON.Texture("textures/sun.jpg", scene);
+			materialSun.emissiveTexture = new BABYLON.Texture("textures/sun.jpg", scene);
+		    materialSun.diffuseTexture.vOffset = 0.1;//Vertical offset of 10%
+		    materialSun.diffuseTexture.uOffset = 0.4;//Horizontal offset of 40%
+			
+        	// Make a Saturn material
+		    var materialSaturn = new BABYLON.StandardMaterial("texture4", scene);
+		    materialSaturn.diffuseTexture = new BABYLON.Texture("textures/saturn.jpg", scene);
+		    materialSaturn.diffuseTexture.vOffset = 0.1;//Vertical offset of 10%
+		    materialSaturn.diffuseTexture.uOffset = 0.4;//Horizontal offset of 40%
+
+        	// Make a Jupiter material
+		    var materialJupiter = new BABYLON.StandardMaterial("texture4", scene);
+		    materialJupiter.diffuseTexture = new BABYLON.Texture("textures/jupiter.jpg", scene);
+		    materialJupiter.diffuseTexture.vOffset = 0.1;//Vertical offset of 10%
+		    materialJupiter.diffuseTexture.uOffset = 0.4;//Horizontal offset of 40%
+			
+        	// Make a Neptune material
+		    var materialNeptune = new BABYLON.StandardMaterial("texture4", scene);
+		    materialNeptune.diffuseTexture = new BABYLON.Texture("textures/neptune.jpg", scene);
+		    materialNeptune.diffuseTexture.vOffset = 0.1;//Vertical offset of 10%
+		    materialNeptune.diffuseTexture.uOffset = 0.4;//Horizontal offset of 40%
+
+        	// Make a Uranus material
+		    var materialUranus = new BABYLON.StandardMaterial("texture4", scene);
+		    materialUranus.diffuseTexture = new BABYLON.Texture("textures/uranus.jpg", scene);
+		    materialUranus.diffuseTexture.vOffset = 0.1;//Vertical offset of 10%
+		    materialUranus.diffuseTexture.uOffset = 0.4;//Horizontal offset of 40%
+
+        	// Make a Mercury material
+		    var materialMercury = new BABYLON.StandardMaterial("texture4", scene);
+		    materialMercury.diffuseTexture = new BABYLON.Texture("textures/mercury.jpg", scene);
+		    materialMercury.diffuseTexture.vOffset = 0.1;//Vertical offset of 10%
+		    materialMercury.diffuseTexture.uOffset = 0.4;//Horizontal offset of 40%
+
+        	// Make a Venus material
+		    var materialVenus = new BABYLON.StandardMaterial("texture4", scene);
+		    materialVenus.diffuseTexture = new BABYLON.Texture("textures/venus.jpg", scene);
+		    materialVenus.diffuseTexture.vOffset = 0.1;//Vertical offset of 10%
+		    materialVenus.diffuseTexture.uOffset = 0.4;//Horizontal offset of 40%
+			
+        	// Make a Earth material
+		    var materialEarth = new BABYLON.StandardMaterial("texture4", scene);
+		    materialEarth.diffuseTexture = new BABYLON.Texture("textures/earth.jpg", scene);
+		    materialEarth.diffuseTexture.vOffset = 0.1;//Vertical offset of 10%
+		    materialEarth.diffuseTexture.uOffset = 0.4;//Horizontal offset of 40%
+
+        	// Make a Mars material
+		    var materialMars = new BABYLON.StandardMaterial("texture4", scene);
+		    materialMars.diffuseTexture = new BABYLON.Texture("textures/mars.jpg", scene);
+		    materialMars.diffuseTexture.vOffset = 0.1;//Vertical offset of 10%
+		    materialMars.diffuseTexture.uOffset = 0.4;//Horizontal offset of 40%
+
+        	// Make a Pluto material
+		    var materialPluto = new BABYLON.StandardMaterial("texture4", scene);
+		    materialPluto.diffuseTexture = new BABYLON.Texture("textures/pluto.jpg", scene);
+		    materialPluto.diffuseTexture.vOffset = 0.1;//Vertical offset of 10%
+		    materialPluto.diffuseTexture.uOffset = 0.4;//Horizontal offset of 40%
+
+			
+			//Meshes
+			
+        	// Make a Sun Sphere
+            var sun = BABYLON.Mesh.CreateSphere("Sphere", 32, sun2.diameter, scene);
+        	sun.material = materialSun;
+			sun.renderingGroupId = 1;
+			
+			//DistanceScale
+			var distanceScale = 100000;
+
+
+			// make a mercury sphere
+            var mercury = BABYLON.Mesh.CreateSphere("Sphere", 16, planets2.mercury.diameter, scene);
+        	mercury.material = materialMercury;
+        	var distanceFromTheSun = 5;
+        	mercury.translate(new BABYLON.Vector3(0, 0, planets2.mercury.orbit), 1, BABYLON.Space.LOCAL);
+        	// around the sun
+            mercury.parent = sun;
+			mercury.renderingGroupId = 1;
+
+
+			// make a venus sphere
+            var venus = BABYLON.Mesh.CreateSphere("Sphere", 16, planets2.venus.diameter, scene);
+        	venus.material = materialVenus;
+        	var distanceFromTheSun = 7;
+        	venus.translate(new BABYLON.Vector3(0, 0, planets2.venus.orbit), 1, BABYLON.Space.LOCAL);
+        	// around the sun
+            venus.parent = sun;
+			venus.renderingGroupId = 1;
+
+        
+        	// Make an Earth Sphere
+            var earth = BABYLON.Mesh.CreateSphere("Sphere", 16, planets2.earth.diameter, scene);
+        	earth.material = materialEarth;
+        	// and put it in orbit
+
+        	earth.translate(new BABYLON.Vector3(0, 0, planets2.earth.orbit), 1, BABYLON.Space.LOCAL);
+        	// around the sun
+            earth.parent = sun;
+			earth.renderingGroupId = 1;
+        
+        
+		
+        	// Make an mars Sphere
+            var mars = BABYLON.Mesh.CreateSphere("Sphere", 16, planets2.mars.diameter, scene);
+        	mars.material = materialMars;
+        	// and put it in orbit
+
+        	mars.translate(new BABYLON.Vector3(0, 0, planets2.mars.orbit), 1, BABYLON.Space.LOCAL);
+        	// around the sun
+            mars.parent = sun;	
+			mars.renderingGroupId = 1;	
+		
+		
+        	// Make an jupiter Sphere
+            var jupiter = BABYLON.Mesh.CreateSphere("Sphere", 16, planets2.jupiter.diameter, scene);
+        	jupiter.material = materialJupiter;
+        	// and put it in orbit
+
+        	jupiter.translate(new BABYLON.Vector3(0, 0, planets2.jupiter.orbit), 1, BABYLON.Space.LOCAL);
+        	// around the sun
+            jupiter.parent = sun;
+			jupiter.renderingGroupId = 1;			
+		
+		
+        	// Make an saturn Sphere
+            var saturn = BABYLON.Mesh.CreateSphere("Sphere", 16, planets2.saturn.diameter, scene);
+        	saturn.material = materialSaturn;
+        	// and put it in orbit
+			saturn.infiniteDistance = true;
+			saturn.autoCull = false;
+        	saturn.translate(new BABYLON.Vector3(0, 0, planets2.saturn.orbit), 1, BABYLON.Space.LOCAL);
+        	// around the sun
+            saturn.parent = sun;	
+			saturn.renderingGroupId = 1;
+        
+		
+        	// Make an uranus Sphere
+            var uranus = BABYLON.Mesh.CreateSphere("Sphere", 16, planets2.uranus.diameter, scene);
+        	uranus.material = materialUranus;
+        	// and put it in orbit
+  
+        	uranus.translate(new BABYLON.Vector3(0, 0, planets2.uranus.orbit), 1, BABYLON.Space.LOCAL);
+        	// around the sun
+            uranus.parent = sun;	
+			uranus.renderingGroupId = 1;
+        
+		
+        	// Make an neptune Sphere
+            var neptune = BABYLON.Mesh.CreateSphere("Sphere", 16, planets2.neptune.diameter, scene);
+        	neptune.material = materialNeptune;
+        	// and put it in orbit
+
+        	neptune.translate(new BABYLON.Vector3(0, 0, planets2.neptune.orbit), 1, BABYLON.Space.LOCAL);
+        	// around the sun
+            neptune.parent = sun;	
+			neptune.renderingGroupId = 1;	
+		
+		
+        	// Make an pluto Sphere
+            var pluto = BABYLON.Mesh.CreateSphere("Sphere", 16, planets2.pluto.diameter, scene);
+        	pluto.material = materialPluto;
+        	// and put it in orbit
+
+        	pluto.translate(new BABYLON.Vector3(0, 0, planets2.pluto.orbit), 1, BABYLON.Space.LOCAL);
+        	// around the sun
+            pluto.parent = sun;	
+			pluto.renderingGroupId = 1;	
+		
+            // set the sun up to rotate
+        	var rotalpha = 0
+            scene.registerBeforeRender(function() { 
+                rotalpha -= .01;
+                sun.rotation.y = rotalpha;
+            });
+        	
+        	
+            return scene;
+        	};
+        
+        
+        
+        
+        /* Extras */
+        
+        /* you can add a stars background using a skybox texture http://doc.babylonjs.com/tutorials/13._Environment#skybox */
+        /* you can add textures to your planets by using texture files http://www.babylonjs-playground.com/?4 */
+        /* Once you have your planets looking ok, you should make them the right size in proportion to each other */
+        
+        /* Additional Resources */
+        /* original playground for 3d is here: http://www.babylonjs-playground.com/#1TVXSM */
+        /* source of sun and planet sizes in kilometers - http://www.exploratorium.edu/ronh/solar_system/ */
+        
+        
+        
+        
+        var scene = createScene();
+
+        engine.runRenderLoop(function () {
+            scene.render();
+        });
+
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+</body>
+</html>

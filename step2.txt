@@ -1,0 +1,76 @@
+// These are our planets
+var planets = {
+	mercury	: 	{ diameter: 4866, orbit: 57950000 },
+	venus 	: 	{ diameter: 12106, orbit: 108110000 },
+	earth 	: 	{ diameter: 12742, orbit: 149570000 },
+	mars 	: 	{ diameter: 6760, orbit: 227840000 }, 
+	jupiter	: 	{ diameter: 142984, orbit: 778140000 },
+	saturn 	: 	{ diameter: 116438, orbit: 1427000000 },
+	uranus 	: 	{ diameter: 46940, orbit: 2870300000 },
+	neptune	: 	{ diameter: 45432, orbit: 4499900000 },
+	pluto 	: 	{ diameter: 2274, orbit: 5913000000 }
+};
+
+// We've written them out like this so you can see different things about them.
+// We call this way of writing things out "Object Notation",
+// because it is a nice way of making a note of objects.
+// Each planet has a diameter in kilometers and an orbit in kilometers
+// The planets are big, and really far apart.
+// It would take you about 10 minutes to walk just 1 kilometer.
+// Imagine how long it would take you to walk from the sun to where mercury orbits!
+
+
+
+// This is our star, the sun.
+var sun = { diameter: 1391900 };
+// It has a diameter which you can get like this:
+// stars.sun.diameter
+// Have you noticed how much bigger it is than the planets?
+// We're going to make all the planets orbit around it.
+
+
+
+// π is a greek letter pronounced "Pie" (sounds yummy)
+
+var π = Math.PI; 
+
+// We use Pi to represent a special number 
+// that you can use to find out the length around any circle,
+// just by knowing the distance accross the circle.
+// We call the length around a circle, the circumferance.
+// The length across a circle, we call the diameter.
+// We even have a name for half the length accross a circle (from the middle to the edge), 
+// we call this the radius.
+// We are going to use these things to help us draw circles and spheres like our planets.
+
+
+
+star.size = 10;
+var scale_factor = (star.size / 25.4) / 1391900;
+
+
+
+// This is a helper function
+// We use it to scale the thousands of kilometers down to something we can fit on our screen
+// You give it the size in Kilometers and the scale factor like this
+// scale(4866, )
+var scale = function(sizeInKM, scaleFactor) {
+	function int_zero(x) {
+		if ( x < 1 ) { return 0; };
+		else { return parseInt( x ,10 ); };
+	}		
+	return int_zero(scaleFactor * sizeInKM * 10000 ) / 10000;
+}
+
+
+
+
+
+/* Extras */
+
+/* you can add a stars background using a skybox texture http://doc.babylonjs.com/tutorials/13._Environment#skybox */
+
+
+/* Additional Resources */
+/* original playground for 3d is here: http://www.babylonjs-playground.com/#1TVXSM */
+/* source of sun and planet sizes in kilometers - http://www.exploratorium.edu/ronh/solar_system/ */
